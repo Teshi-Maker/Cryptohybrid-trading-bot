@@ -1,0 +1,289 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line me-2"></i>Trading Dashboard</h2>
+        <div>
+            <button class="btn btn-success" onclick="startBot()">
+                <i class="fas fa-play me-1"></i>Start Bot
+            </button>
+            <button class="btn btn-danger ms-2" onclick="stopBot()">
+                <i class="fas fa-stop me-1"></i>Stop Bot
+            </button>
+        </div>
+    </div>
+
+    <!-- Portfolio Summary -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="trading-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">Total Portfolio Value</h6>
+                        <h4 class="mb-0">${{ "%.2f"|format(portfolio.total_value) }}</h4>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-wallet fa-2x text-primary"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="trading-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">24h Change</h6>
+                        <h4 class="mb-0 {% if portfolio.daily_change >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                            {% if portfolio.daily_change >= 0 %}+{% endif %}${{ "%.2f"|format(portfolio.daily_change) }}
+                        </h4>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-chart-line fa-2x {% if portfolio.daily_change >= 0 %}text-success{% else %}text-danger{% endif %}"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="trading-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">24h Change %</h6>
+                        <h4 class="mb-0 {% if portfolio.daily_change_percent >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                            {% if portfolio.daily_change_percent >= 0 %}+{% endif %}{{ "%.2f"|format(portfolio.daily_change_percent) }}%
+                        </h4>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-percentage fa-2x {% if portfolio.daily_change_percent >= 0 %}text-success{% else %}text-danger{% endif %}"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="trading-card">
+                <div class="d-flex align-items-center">
+                    <div class="flex-grow-1">
+                        <h6 class="text-muted mb-1">Active Bots</h6>
+                        <h4 class="mb-0">{{ bot_configs|selectattr('is_active')|list|length }}</h4>
+                    </div>
+                    <div class="text-end">
+                        <i class="fas fa-robot fa-2x text-info"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Bot Configurations -->
+        <div class="col-lg-6 mb-4">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-cogs me-2"></i>Bot Configurations</h5>
+                
+                {% if bot_configs %}
+                    {% for config in bot_configs %}
+                    <div class="border rounded p-3 mb-3 {% if config.is_active %}border-success{% else %}border-secondary{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ config.name }}</h6>
+                                <p class="text-muted small mb-1">
+                                    Strategies: {{ config.get_strategies()|join(', ') }}
+                                </p>
+                                <p class="text-muted small mb-0">
+                                    Pairs: {{ config.get_pairs()[:3]|join(', ') }}{% if config.get_pairs()|length > 3 %} +{{ config.get_pairs()|length - 3 }} more{% endif %}
+                                </p>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge {% if config.is_active %}bg-success{% else %}bg-secondary{% endif %} mb-2">
+                                    {% if config.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                                <br>
+                                <button class="btn btn-sm {% if config.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" 
+                                        onclick="{% if config.is_active %}stopBotConfig({{ config.id }}){% else %}startBotConfig({{ config.id }}){% endif %}">
+                                    {% if config.is_active %}Stop{% else %}Start{% endif %}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-robot fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No bot configurations found.</p>
+                        <a href="{{ url_for('settings') }}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create Configuration
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Trades -->
+        <div class="col-lg-6 mb-4">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-history me-2"></i>Recent Trades</h5>
+                
+                {% if recent_trades %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Symbol</th>
+                                    <th>Side</th>
+                                    <th>Price</th>
+                                    <th>P&L</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for trade in recent_trades %}
+                                <tr>
+                                    <td>{{ trade.symbol }}</td>
+                                    <td>
+                                        <span class="badge {% if trade.side == 'buy' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ trade.side.upper() }}
+                                        </span>
+                                    </td>
+                                    <td>${{ "%.4f"|format(trade.price) }}</td>
+                                    <td class="{% if trade.profit_loss and trade.profit_loss >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                                        {% if trade.profit_loss %}
+                                            {% if trade.profit_loss >= 0 %}+{% endif %}${{ "%.2f"|format(trade.profit_loss) }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No recent trades found.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Portfolio Positions -->
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-pie-chart me-2"></i>Portfolio Positions</h5>
+                
+                <div class="row">
+                    {% for position in portfolio.positions %}
+                    <div class="col-md-4 mb-3">
+                        <div class="border rounded p-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ position.symbol }}</h6>
+                                    <p class="text-muted small mb-0">${{ "%.2f"|format(position.value) }}</p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="{% if position.change >= 0 %}profit-positive{% else %}profit-negative{% endif %}">
+                                        {% if position.change >= 0 %}+{% endif %}{{ "%.1f"|format(position.change) }}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Arbitrage Opportunities -->
+        <div class="col-lg-4 mb-4">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-exchange-alt me-2"></i>Arbitrage Opportunities</h5>
+                
+                {% if arbitrage_opps %}
+                    {% for opp in arbitrage_opps %}
+                    <div class="border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ opp.symbol }}</h6>
+                                <small class="text-muted">{{ opp.exchange_1 }} → {{ opp.exchange_2 }}</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="profit-positive">+{{ "%.2f"|format(opp.profit_percent) }}%</span>
+                                <br>
+                                <button class="btn btn-sm btn-success mt-1" onclick="executeArbitrage({{ opp.id }})">
+                                    Execute
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-search fa-2x text-muted mb-2"></i>
+                        <p class="text-muted small">No opportunities found</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function startBot() {
+    // In production, this would call the actual API
+    alert('Bot starting... (Demo mode)');
+}
+
+function stopBot() {
+    // In production, this would call the actual API
+    alert('Bot stopping... (Demo mode)');
+}
+
+function startBotConfig(configId) {
+    fetch('/api/start_bot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({config_id: configId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function stopBotConfig(configId) {
+    fetch('/api/stop_bot', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({config_id: configId})
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+function executeArbitrage(oppId) {
+    // In production, this would execute the arbitrage trade
+    alert('Executing arbitrage opportunity... (Demo mode)');
+}
+</script>
+{% endblock %}
