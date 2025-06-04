@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Hero Section -->
+            <div class="text-center mb-5">
+                <h1 class="display-4 mb-4">
+                    <i class="fas fa-robot text-primary me-3"></i>
+                    Enterprise Crypto Trading Bot
+                </h1>
+                <p class="lead text-muted">
+                    Advanced AI-powered trading with machine learning, arbitrage detection, 
+                    and portfolio optimization across multiple exchanges.
+                </p>
+            </div>
+
+            <!-- Feature Cards -->
+            <div class="row mb-5">
+                <div class="col-md-4 mb-3">
+                    <div class="trading-card text-center">
+                        <i class="fas fa-brain fa-3x text-info mb-3"></i>
+                        <h5>AI & Machine Learning</h5>
+                        <p class="text-muted">Advanced prediction models and sentiment analysis</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="trading-card text-center">
+                        <i class="fas fa-exchange-alt fa-3x text-success mb-3"></i>
+                        <h5>Multi-Exchange Arbitrage</h5>
+                        <p class="text-muted">Real-time arbitrage detection across major exchanges</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="trading-card text-center">
+                        <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                        <h5>Enterprise Security</h5>
+                        <p class="text-muted">Bank-grade security with OTP verification</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row justify-content-center">
+                <div class="col-md-6 text-center">
+                    <div class="trading-card">
+                        <h4 class="mb-4">Get Started</h4>
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+                            </a>
+                            <a href="{{ url_for('register') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </a>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <div class="text-start">
+                            <h6 class="text-muted mb-3">Quick Access:</h6>
+                            <div class="row">
+                                <div class="col-6">
+                                    <a href="{{ url_for('quick_reset') }}" class="btn btn-sm btn-outline-info w-100 mb-2">
+                                        <i class="fas fa-bolt me-1"></i>Quick Setup
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="{{ url_for('emergency_reset') }}" class="btn btn-sm btn-outline-warning w-100 mb-2">
+                                        <i class="fas fa-sync me-1"></i>Reset System
+                                    </a>
+                                </div>
+                            </div>
+                            <small class="text-muted">
+                                Quick Setup creates admin account: admin / CryptoBot2024!
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features List -->
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="trading-card">
+                        <h4 class="mb-4">Platform Features</h4>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        High-frequency trading algorithms
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Cross-exchange arbitrage detection
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Portfolio optimization with ML
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        News sentiment analysis
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-unstyled">
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        24/7 automated trading
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Real-time risk management
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Advanced backtesting tools
+                                    </li>
+                                    <li class="mb-2">
+                                        <i class="fas fa-check text-success me-2"></i>
+                                        Secure API key management
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
