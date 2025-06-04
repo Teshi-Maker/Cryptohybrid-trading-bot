@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2 class="mb-4"><i class="fas fa-cogs me-2"></i>Settings & Configuration</h2>
+
+    <div class="row">
+        <!-- API Keys Management -->
+        <div class="col-lg-6 mb-4">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-key me-2"></i>API Keys</h5>
+                
+                <!-- Add API Key Form -->
+                <form id="apiKeyForm" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Exchange</label>
+                            <select class="form-select" name="exchange" required>
+                                <option value="">Select Exchange</option>
+                                <option value="binance">Binance</option>
+                                <option value="coinbase">Coinbase Pro</option>
+                                <option value="kraken">Kraken</option>
+                                <option value="huobi">Huobi</option>
+                                <option value="okx">OKX</option>
+                                <option value="kucoin">KuCoin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">API Key</label>
+                            <input type="text" class="form-control" name="api_key" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">API Secret</label>
+                        <input type="password" class="form-control" name="api_secret" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Add API Key
+                    </button>
+                </form>
+
+                <!-- Existing API Keys -->
+                <h6 class="mb-3">Configured API Keys</h6>
+                {% if api_keys %}
+                    {% for key in api_keys %}
+                    <div class="border rounded p-3 mb-2 d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">{{ key.exchange.title() }}</h6>
+                            <small class="text-muted">
+                                Key: {{ key.api_key[:8] }}...
+                                {% if key.is_active %}
+                                    <span class="badge bg-success ms-2">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary ms-2">Inactive</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteApiKey({{ key.id }})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No API keys configured yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Bot Configurations -->
+        <div class="col-lg-6 mb-4">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-robot me-2"></i>Bot Configurations</h5>
+                
+                <!-- Add Bot Config Form -->
+                <form id="botConfigForm" class="mb-4">
+                    <div class="mb-3">
+                        <label class="form-label">Configuration Name</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Primary Strategy</label>
+                            <select class="form-select" name="strategies" required>
+                                <option value="">Select Strategy</option>
+                                <option value="hft">High Frequency Trading</option>
+                                <option value="arbitrage">Cross-Exchange Arbitrage</option>
+                                <option value="ml_prediction">ML Price Prediction</option>
+                                <option value="portfolio_optimization">Portfolio Optimization</option>
+                                <option value="scalping">Scalping Strategy</option>
+                                <option value="hybrid">Hybrid Multi-Strategy</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Trading Pairs</label>
+                            <input type="text" class="form-control" name="pairs" placeholder="BTC/USDT, ETH/USDT" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="hft_active">
+                                <label class="form-check-label">Enable HFT</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="arbitrage_active">
+                                <label class="form-check-label">Enable Arbitrage</label>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="sentiment_active">
+                                <label class="form-check-label">Enable Sentiment</label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save me-1"></i>Save Configuration
+                    </button>
+                </form>
+
+                <!-- Existing Configurations -->
+                <h6 class="mb-3">Saved Configurations</h6>
+                {% if bot_configs %}
+                    {% for config in bot_configs %}
+                    <div class="border rounded p-3 mb-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1">{{ config.name }}</h6>
+                                <small class="text-muted">
+                                    {{ config.get_strategies()|join(', ') }}
+                                    {% if config.is_active %}
+                                        <span class="badge bg-success ms-2">Running</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary ms-2">Stopped</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteBotConfig({{ config.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-muted">No bot configurations saved yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Settings -->
+    <div class="row">
+        <div class="col-12">
+            <div class="trading-card">
+                <h5 class="mb-3"><i class="fas fa-bell me-2"></i>Notification Settings</h5>
+                
+                <form method="POST" action="/api/save_notification_settings">
+                    {{ notification_form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ notification_form.notification_email.label(class="form-label") }}
+                            {{ notification_form.notification_email(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check mt-4">
+                                {{ notification_form.email_notifications_enabled(class="form-check-input") }}
+                                {{ notification_form.email_notifications_enabled.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                                {{ notification_form.notify_trades(class="form-check-input") }}
+                                {{ notification_form.notify_trades.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                                {{ notification_form.notify_arbitrage(class="form-check-input") }}
+                                {{ notification_form.notify_arbitrage.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                                {{ notification_form.notify_ml(class="form-check-input") }}
+                                {{ notification_form.notify_ml.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="form-check">
+                                {{ notification_form.notify_errors(class="form-check-input") }}
+                                {{ notification_form.notify_errors.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        {{ notification_form.submit(class="btn btn-primary") }}
+                        <button type="button" class="btn btn-outline-secondary" onclick="testNotification()">
+                            <i class="fas fa-paper-plane me-1"></i>Test Notification
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// API Key Management
+document.getElementById('apiKeyForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    fetch('/api/add_api_key', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            exchange: formData.get('exchange'),
+            api_key: formData.get('api_key'),
+            api_secret: formData.get('api_secret')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+});
+
+function deleteApiKey(keyId) {
+    if (confirm('Are you sure you want to delete this API key?')) {
+        fetch(`/api/delete_api_key/${keyId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+}
+
+// Bot Configuration Management
+document.getElementById('botConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    fetch('/api/add_bot_config', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            name: formData.get('name'),
+            strategies: formData.get('strategies'),
+            pairs: formData.get('pairs'),
+            hft_active: formData.get('hft_active') === 'on',
+            arbitrage_active: formData.get('arbitrage_active') === 'on',
+            sentiment_active: formData.get('sentiment_active') === 'on'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    });
+});
+
+function deleteBotConfig(configId) {
+    if (confirm('Are you sure you want to delete this configuration?')) {
+        fetch(`/api/delete_bot_config/${configId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+}
+
+function testNotification() {
+    fetch('/api/test_notification', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(data.message);
+    });
+}
+</script>
+{% endblock %}
